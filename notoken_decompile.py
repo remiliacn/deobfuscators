@@ -34,11 +34,12 @@ def _build_replace_dict_from_bytecode(string: str) -> dict:
         if index % 2 == 0:
             value = element.strip()
         else:
-            encoded_emoji = element.encode('utf-8')
+            encoded_emoji = element.encode('utf-8')[:4]
             if encoded_emoji == b'\xf0\x9f\x9b\xa1\xef\xb8\x8f':
                 encoded_emoji = b'\xf0\x9f\x9b\xa1'
 
-            replace_dict[encoded_emoji] = value
+            if encoded_emoji != b' ':
+                replace_dict[encoded_emoji] = value
 
     return replace_dict
 
@@ -66,18 +67,22 @@ def notoken_decompile(exe_path: str):
             encryptor_pyc_file = path.join(getcwd(), 'encryptor.pyc')
             move(path.join(extracted_dir, 'PYZ-00.pyz_extracted', 'notoken887',
                  'encryptor.pyc'), encryptor_pyc_file)
-            encryptor_bytecode = decompile_pyc(encryptor_pyc_file)
-            replace_dict = _build_replace_dict_from_bytecode(
-                encryptor_bytecode)
-
-            for i in [x for x in token if x.strip()]:
-                replaced_data = replace_dict.get(i.encode('utf-8'), '')
-                if not replaced_data:
-                    logger.warning(f'{i.encode('utf-8')} is not replaced.')
-                    if i == b'\xef\xb8\x8f':
-                        decrypted_token = decrypted_token.replace(i, '')
-                else:
-                    decrypted_token = decrypted_token.replace(i, replaced_data)
+            from encryptor import TokenCryptor
+            c = TokenCryptor()
+            decrypted_token = c.process(decrypted_token)
+            # encryptor_bytecode = decompile_pyc(encryptor_pyc_file)
+            
+            # replace_dict = _build_replace_dict_from_bytecode(
+            #     encryptor_bytecode)
+ 
+            # for i in [x for x in token if x.strip()]:
+            #     replaced_data = replace_dict.get(i.encode('utf-8'), '')
+            #     if not replaced_data:
+            #         logger.warning(f'{i.encode('utf-8')} is not replaced.')
+            #         if i == b'\xef\xb8\x8f':
+            #             decrypted_token = decrypted_token.replace(i, '')
+            #     else:
+            #         decrypted_token = decrypted_token.replace(i, replaced_data)
 
         else:
             logger.error("Error: Token not found.")
@@ -104,7 +109,7 @@ if __name__ == "__main__":
     start_time = time()
     if len(argv) != 2:
         logger.info('No arg provided, using default file name "main.exe"')
-        notoken_decompile('main.exe')
+        notoken_decompile('speedy-maqing.exe')
     else:
         notoken_decompile(argv[1])
 
