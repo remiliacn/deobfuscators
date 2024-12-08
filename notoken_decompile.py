@@ -5,13 +5,14 @@ notoken decompiler
 Author: @remiliacn @xuewu
 """
 
+from argparse import ArgumentParser
 from os import getcwd, path, remove
 from shutil import move
 from re import search
 from sys import argv
 from typing import Optional
 from loguru import logger
-from time import time
+from time import sleep, time
 from discord_token_validator import validate
 from utils.decompile_utils import (
     clean_up_temp_files,
@@ -48,7 +49,7 @@ def _build_replace_dict_from_bytecode(string: str) -> dict:
     return replace_dict
 
 
-def notoken_decompile(exe_path: str):
+def notoken_decompile(exe_path: str, unsafe=False):
     logger.info("Extracting PyInstaller package...")
     extracted_dir = extract_pyinstaller_exe(exe_path)
 
@@ -76,12 +77,7 @@ def notoken_decompile(exe_path: str):
                 ),
                 encryptor_pyc_file,
             )
-            if (
-                input(
-                    'If you are using a sandbox environment, you can use the bytecode method to get a 100% accurate token decryption, but it is NOT recommended as their might be malicious code. But if you acknowledge the risk, please enter "y", otherwise it will fallback to attempt to build a replacement dict.\n'
-                ).lower()
-                == "y"
-            ):
+            if unsafe:
                 from encryptor import TokenCryptor
 
                 c = TokenCryptor()
@@ -121,10 +117,24 @@ def notoken_decompile(exe_path: str):
 
 if __name__ == "__main__":
     start_time = time()
-    if len(argv) != 2:
-        logger.info('No arg provided, using default file name "main.exe"')
-        notoken_decompile("speedy-maqing.exe")
-    else:
-        notoken_decompile(argv[1])
+    
+    parser = ArgumentParser(
+        prog='Notoken Decompiler',
+        description='A program for decompiling RayxStealer',
+        epilog='Author: Remiliacn, Xuewu')
+    
+    parser.add_argument('filename')
+    parser.add_argument('-s', '--unsafe', action="store_true", default=None)
+    
+    args = parser.parse_args()
+    unsafe_arg = False
+    
+    if not args.unsafe is None:
+        unsafe_arg = args.unsafe
 
+    notoken_decompile(args.filename, unsafe_arg)
     logger.success(f"Successfully finished all tasks in {time() - start_time:.2f}s")
+    
+    if args.unsafe is None:
+        logger.info('Safe decompilation is completed, if you want to change the behavior, add --unsafe while calling the script.')
+

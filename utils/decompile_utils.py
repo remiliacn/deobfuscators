@@ -40,7 +40,6 @@ def clean_up_temp_files(directory: str):
 
         if path.isfile(file_path):
             remove(file_path)
-            logger.debug(f"Removed file: {file_path}")
         elif path.isdir(file_path):
             rmtree(file_path)
             logger.debug(f"Removed directory: {file_path}")
