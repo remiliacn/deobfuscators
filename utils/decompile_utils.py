@@ -30,7 +30,11 @@ def decompile_pyc(pyc_path: str) -> str:
     result = run([PYCDAS, pyc_path], stdout=PIPE, stderr=PIPE, text=True)
     return result.stdout
 
-def _clean_up_temp_files(directory: str):
+def clean_up_temp_files(directory: str):
+    if path.isfile(directory):
+        remove(directory)
+        return
+
     for filename in listdir(directory):
         file_path = path.join(directory, filename)
 

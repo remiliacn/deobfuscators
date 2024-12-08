@@ -13,7 +13,7 @@ from loguru import logger
 
 from discord_token_validator import validate
 from notoken_decompile import find_payload_file
-from utils.decompile_utils import _clean_up_temp_files, decompile_pyc, extract_pyinstaller_exe
+from utils.decompile_utils import clean_up_temp_files, decompile_pyc, extract_pyinstaller_exe
 
 def _analyze_pysilon_bytecode(result: str) -> List[str]:
     find_result = list(set(findall(rf"'(.*?VT)'", result)))
@@ -34,13 +34,13 @@ def pysilon_decompile(exe_path: str):
     source_prepared_file = find_payload_file(extracted_dir, 'source_prepared.pyc')
     if not source_prepared_file:
         logger.error("Error: source_prepared.pyc file not found.")
-        _clean_up_temp_files(extracted_dir)
+        clean_up_temp_files(extracted_dir)
         return
     
     result = decompile_pyc(source_prepared_file)
     analyzed_bot_token = _analyze_pysilon_bytecode(result)
 
-    _clean_up_temp_files(extracted_dir)
+    clean_up_temp_files(extracted_dir)
 
     if analyzed_bot_token:
         for token in analyzed_bot_token:
@@ -50,7 +50,7 @@ def pysilon_decompile(exe_path: str):
             if validate(token, True):
                 logger.success(f'This token is valid!: {token}')
             else:
-                logger.warning('This bot token is NOT valid.')
+                logger.warning(f'This bot token is NOT valid. {token}')
     else:
         logger.info('No bot token was found!')
 

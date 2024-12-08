@@ -15,7 +15,7 @@ from typing import Optional
 from loguru import logger
 from time import time
 from discord_token_validator import validate
-from utils.decompile_utils import _clean_up_temp_files, decompile_pyc, extract_pyinstaller_exe, find_payload_file
+from utils.decompile_utils import clean_up_temp_files, decompile_pyc, extract_pyinstaller_exe, find_payload_file
 
 
 def extract_token_from_file(source_code: str) -> Optional[str]:
@@ -83,7 +83,7 @@ def notoken_decompile(exe_path: str):
             logger.error("Error: Token not found.")
 
     try:
-        _clean_up_temp_files(extracted_dir)
+        clean_up_temp_files(extracted_dir)
         remove(path.join(getcwd(), 'encryptor.pyc'))
     except IOError:
         logger.error(
