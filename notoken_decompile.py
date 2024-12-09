@@ -9,7 +9,6 @@ from argparse import ArgumentParser
 from os import getcwd, path, remove
 from shutil import move
 from re import search
-from sys import argv
 from typing import Optional
 from loguru import logger
 from time import sleep, time
