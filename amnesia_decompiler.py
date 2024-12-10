@@ -78,6 +78,8 @@ def _perform_reverse_blank_grabber(directory: str):
             stage3 = blank_stage3(assembly)
             stage4 = blank_stage4(stage3)
             
+            logger.success('\n'.join(stage4))
+            
 
 
 def amnesia_layer_decompile(exe_path: str):

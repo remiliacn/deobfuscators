@@ -12,6 +12,7 @@ from base64 import b64decode
 from codecs import decode
 from dataclasses import dataclass
 from lzma import decompress
+from typing import List
 from loguru import logger
 from re import M, MULTILINE, findall, search, sub
 
@@ -29,7 +30,7 @@ class BlankStage3Obj:
     fourth: str
 
 
-def blank_stage3(assembly: bytes):
+def blank_stage3(assembly: bytes) -> BlankStage3Obj:
     bytestr = b"\xfd7zXZ\x00\x00" + assembly.split(b"\xfd7zXZ\x00\x00")[1]
     decompressed = decompress(bytestr)
     sanitized = decompressed.decode().replace(";", "\n")
@@ -42,7 +43,7 @@ def blank_stage3(assembly: bytes):
     )
 
 
-def blank_stage4(stage3_obj: BlankStage3Obj):
+def blank_stage4(stage3_obj: BlankStage3Obj) -> List[str]:
     pythonbytes = b""
     try:
         unrot = decode(stage3_obj.first, "rot13")
@@ -61,5 +62,12 @@ def blank_stage4(stage3_obj: BlankStage3Obj):
     webhook = findall(WEBHOOK_REGEX, strings)
     telegram64 = findall(TELEGRAM_REGEX_BASE64, strings)
     telegram = findall(TELEGRAM_REGEX, strings)
-    if webhook or webhook64:
-        logger.success(f"There is a webhook!! {webhook}")
+
+    if webhook64:
+        webhook64 = [b64decode(x).decode("utf-8") for x in webhook64]
+    if telegram64:
+        telegram64 = [b64decode(x).decode("utf-8") for x in telegram64]
+    if webhook or webhook64 or telegram or telegram64:
+        logger.success(f"We got something!!")
+
+    return webhook64 + webhook + telegram64 + telegram
