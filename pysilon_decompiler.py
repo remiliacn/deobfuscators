@@ -5,7 +5,7 @@ Author: @remiliacn
 """
 
 from base64 import b64decode
-from re import findall
+from re import findall, search
 from sys import argv
 from time import time
 from typing import List
@@ -16,7 +16,8 @@ from notoken_decompile import find_payload_file
 from utils.decompile_utils import clean_up_temp_files, decompile_pyc, extract_pyinstaller_exe
 
 def _analyze_pysilon_bytecode(result: str) -> List[str]:
-    find_result = list(set(findall(rf"'(.*?VT)'", result)))
+    trimmed_result = result[search(r'\d+:\sauto', result).start():]
+    find_result = list(set(findall(r"'([A-Za-z0-9+/=]{90,})'", trimmed_result)))
     
     if find_result:
         logger.info('Found suspicious token that looks like bot token.')

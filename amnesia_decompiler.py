@@ -16,7 +16,6 @@ from typing import List
 from loguru import logger
 from rarfile import RarFile
 
-from discord_token_validator import validate
 from notoken_decompile import find_payload_file
 from utils.aes import AESModeOfOperationGCM
 from utils.blank import blank_stage3, blank_stage4
