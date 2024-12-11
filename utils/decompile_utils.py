@@ -19,11 +19,12 @@ def extract_pyinstaller_exe(exe_path: str) -> str:
     return path.join(getcwd(), path.basename(exe_path) + "_extracted")
 
 
-def find_payload_file(extracted_dir: str, find_file: str, *file_path) -> Optional[str]:
+def find_payload_file(extracted_dir: str, find_file: str, *file_path, blacklist_filenames=[]) -> Optional[str]:
     for root, _, files in walk(path.join(extracted_dir, *file_path)):
         for file in files:
             if find_file in file:
-                return path.join(root, file)
+                if file not in blacklist_filenames:
+                    return path.join(root, file)
     return None
 
 
