@@ -3,7 +3,7 @@ Blank grabber helper utility.
 
 Source from: https://github.com/TaxMachine/Grabbers-Deobfuscator/blob/main/utils/deobfuscation.py
 
-NO LICENSE
+License: WTFPL (https://github.com/TaxMachine/Grabbers-Deobfuscator/issues/20)
 
 Author: @TaxMachine, @Remiliacn (modified for amnesia use case.)
 """
