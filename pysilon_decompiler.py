@@ -12,9 +12,9 @@ from typing import List, Optional
 
 from loguru import logger
 
+from constants.general import INVALID_TOKEN
 from discord_token_validator import validate
-from notoken_decompile import find_payload_file
-from utils.decompile_utils import clean_up_temp_files, decompile_pyc, extract_pyinstaller_exe
+from utils.decompile_utils import clean_up_temp_files, decompile_pyc, extract_pyinstaller_exe, find_payload_file
 
 
 def _analyze_pysilon_bytecode(result: str) -> Optional[List[str]]:
@@ -30,7 +30,7 @@ def _analyze_pysilon_bytecode(result: str) -> Optional[List[str]]:
     return None
 
 
-def pysilon_decompile(exe_path: str):
+def pysilon_decompile(exe_path: str) -> str:
     logger.info("Extracting PyInstaller package...")
     extracted_dir = extract_pyinstaller_exe(exe_path)
 
@@ -39,7 +39,7 @@ def pysilon_decompile(exe_path: str):
     if not source_prepared_file:
         logger.error("Error: source_prepared.pyc file not found.")
         clean_up_temp_files(extracted_dir)
-        return
+        return INVALID_TOKEN
 
     result = decompile_pyc(source_prepared_file)
     analyzed_bot_token = _analyze_pysilon_bytecode(result)
@@ -50,10 +50,13 @@ def pysilon_decompile(exe_path: str):
         for token in analyzed_bot_token:
             if validate(token, True):
                 logger.success(f'This token is valid!: {token}')
+                return '\n'.join(token)
             else:
                 logger.warning(f'This bot token is NOT valid. {token}')
     else:
         logger.info('No bot token was found!')
+
+    return INVALID_TOKEN
 
 
 if __name__ == "__main__":

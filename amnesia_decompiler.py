@@ -16,13 +16,13 @@ from zlib import decompress
 from loguru import logger
 from rarfile import RarFile
 
-from notoken_decompile import find_payload_file
+from constants.general import INVALID_TOKEN
 from utils.aes import AESModeOfOperationGCM
 from utils.blank import blank_stage3, blank_stage4
 from utils.decompile_utils import (
     clean_up_temp_files,
     decompile_pyc,
-    extract_pyinstaller_exe,
+    extract_pyinstaller_exe, find_payload_file,
 )
 
 
@@ -35,6 +35,7 @@ def _decompile_blank_grabber(pyc_decompiled: str, directory: str):
             aes_file_index = idx
             break
 
+    payload = INVALID_TOKEN
     if aes_file_index:
         aes_file = pyc_decompiled_args[aes_file_index].strip().replace("'", "")
         logger.info(f"AES file: {aes_file}")
@@ -67,7 +68,10 @@ def _decompile_blank_grabber(pyc_decompiled: str, directory: str):
             stage3 = blank_stage3(assembly)
             stage4 = blank_stage4(stage3)
 
-            logger.success('\n'.join(stage4))
+            payload = '\n'.join(stage4)
+            logger.success(payload)
+
+    return payload
 
 
 def _find_blank_grabber_pyc(directory: str) -> str:
@@ -77,11 +81,11 @@ def _find_blank_grabber_pyc(directory: str) -> str:
                 return path.join(root, file)
 
 
-def _perform_reverse_blank_grabber(directory: str):
+def _perform_reverse_blank_grabber(directory: str) -> str:
     blank_grabber_pyc = _find_blank_grabber_pyc(directory)
     pyc_decompiled = decompile_pyc(blank_grabber_pyc)
 
-    _decompile_blank_grabber(pyc_decompiled, directory)
+    return _decompile_blank_grabber(pyc_decompiled, directory)
 
 
 def amnesia_layer_decompile(exe_path: str):
@@ -109,12 +113,14 @@ def amnesia_layer_decompile(exe_path: str):
         based_exe_file = find_payload_file(extracted_blank_grabber, "based.exe")
         extracted_blank_grabber_dir = extract_pyinstaller_exe(based_exe_file)
 
-    _perform_reverse_blank_grabber(extracted_blank_grabber_dir)
+    result = _perform_reverse_blank_grabber(extracted_blank_grabber_dir)
     clean_up_temp_files(extracted_dir)
     if not is_blank_grabber:
         clean_up_temp_files(extracted_blank_grabber_dir)
     clean_up_temp_files(path.join(getcwd(), 'dump.bin'))
     clean_up_temp_files(path.join(getcwd(), 'stub-o.pyc'))
+
+    return result
 
 
 if __name__ == "__main__":

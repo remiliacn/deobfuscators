@@ -8,13 +8,16 @@ Usage: python exela_stealer_decompiler.py -f <file_path>
 
 from argparse import ArgumentParser
 from base64 import b64decode
+from copy import deepcopy
 from dataclasses import dataclass
 from re import IGNORECASE, findall
 from time import time
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from httpx import delete, get
 from loguru import logger
 
+from constants.general import INVALID_TOKEN
 from utils.decompile_utils import (
     clean_up_temp_files,
     decompile_pyc,
@@ -64,7 +67,7 @@ def _extract_webhook_config(obfuscated_code: str):
         return webhook
 
 
-def exela_decompile(exe_path: str):
+def exela_decompile(exe_path: str) -> str:
     logger.info("Extracting PyInstaller package...")
     extracted_dir = extract_pyinstaller_exe(exe_path)
 
@@ -72,7 +75,7 @@ def exela_decompile(exe_path: str):
     stub_file = find_payload_file(extracted_dir, "Stub.pyc", "")
     if not stub_file:
         logger.error("Error: Stub file not found.")
-        return
+        return INVALID_TOKEN
 
     logger.success(f"Found Stub file: {stub_file}")
     logger.info("Decompiling pyc file...")
@@ -84,13 +87,26 @@ def exela_decompile(exe_path: str):
     layer1_decrypted_code = aes_gcm_decrypt(encrypted_object)
     logger.info("Extracting actual code payload...")
     webhooks = _extract_webhook_config(layer1_decrypted_code)
+
+    webhook_string = INVALID_TOKEN
     if webhooks:
-        webhook_string = "\n".join(webhooks)
-        logger.success(f"Found webhook: {webhook_string}")
+        valid_webhooks = deepcopy(webhooks)
+        for webhook in webhooks:
+            if get(webhook).status_code != 204:
+                logger.warning(f'{webhook} is invalid.')
+                valid_webhooks.remove(webhook)
+            else:
+                result = delete(webhook, headers={"Content-Type": "application/json"})
+                logger.success(f'Webhook {webhook} is retrieved successfully and deleted!! {result.status_code}')
+
+        if valid_webhooks:
+            webhook_string = "\n".join(valid_webhooks)
+            logger.success(f"Found webhook: {webhook_string}")
     else:
         logger.warning("Webhook is not found.")
 
     clean_up_temp_files(extracted_dir)
+    return webhook_string
 
 
 if __name__ == "__main__":
