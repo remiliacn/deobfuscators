@@ -127,7 +127,7 @@ if __name__ == "__main__":
     start_time = time()
     if len(argv) != 2:
         logger.info('No arg provided, using default file name "main.exe"')
-        amnesia_layer_decompile("WannaCryDoxxer.exe")
+        amnesia_layer_decompile("main.exe")
     else:
         amnesia_layer_decompile(argv[1])
 

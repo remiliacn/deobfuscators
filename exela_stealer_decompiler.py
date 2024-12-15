@@ -14,7 +14,6 @@ from re import IGNORECASE, findall
 from time import time
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from httpx import delete, get
 from loguru import logger
 
 from constants.general import INVALID_TOKEN
@@ -24,6 +23,7 @@ from utils.decompile_utils import (
     extract_pyinstaller_exe,
     find_payload_file,
 )
+from utils.webhook_util import validate_webhooks
 
 
 @dataclass
@@ -41,7 +41,7 @@ def aes_gcm_decrypt(obj: GCMDecryptionObject) -> str:
     )
     decryptor = cipher.decryptor()
     decrypted_data = (
-            decryptor.update(b64decode(obj.encrypted_string)) + decryptor.finalize()
+        decryptor.update(b64decode(obj.encrypted_string)) + decryptor.finalize()
     )
 
     return decrypted_data.decode("utf-8", errors="ignore")
@@ -90,18 +90,8 @@ def exela_decompile(exe_path: str) -> str:
 
     webhook_string = INVALID_TOKEN
     if webhooks:
-        valid_webhooks = deepcopy(webhooks)
-        for webhook in webhooks:
-            if get(webhook).status_code != 204:
-                logger.warning(f'{webhook} is invalid.')
-                valid_webhooks.remove(webhook)
-            else:
-                result = delete(webhook, headers={"Content-Type": "application/json"})
-                logger.success(f'Webhook {webhook} is retrieved successfully and deleted!! {result.status_code}')
-
-        if valid_webhooks:
-            webhook_string = "\n".join(valid_webhooks)
-            logger.success(f"Found webhook: {webhook_string}")
+        valid_webhooks = validate_webhooks(webhooks)
+        webhook_string = "\n".join(valid_webhooks)
     else:
         logger.warning("Webhook is not found.")
 
