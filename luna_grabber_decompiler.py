@@ -1,4 +1,5 @@
 from os import getcwd, path
+from sys import argv
 from typing import List
 
 from loguru import logger
@@ -45,4 +46,4 @@ def luna_grabber_decompiler(exe_path: str) -> List[str]:
 
 
 if __name__ == "__main__":
-    luna_grabber_decompiler(f"{getcwd()}/93483434.exe")
+    print(luna_grabber_decompiler(argv[1]))
