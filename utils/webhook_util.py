@@ -16,10 +16,10 @@ def validate_and_delete_webhook(webhook: str) -> bool:
     logger.debug(f'Webhook status code: {webhook_status_code}')
     if webhook_status_code <= 205:
         logger.info(f"webhook: {webhook} is valid!")
-        result = delete(webhook, headers={"Content-Type": "application/json"})
-        logger.success(
-            f"Webhook {webhook} is retrieved successfully and deleted!! {result.status_code}"
-        )
+        # result = delete(webhook, headers={"Content-Type": "application/json"})
+        # logger.success(
+        #     f"Webhook {webhook} is retrieved successfully and deleted!! {result.status_code}"
+        # )
 
         return True
 

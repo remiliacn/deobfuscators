@@ -1,5 +1,5 @@
 WEBHOOK_REGEX = r"(https?:\/\/.*discord(app)?\.com\/api\/webhooks\/\d+\/.{68})"
-WEBHOOK_REGEX_BASE64 = r"(aHR0cHM6Ly9[\d\w]+==)"
+WEBHOOK_REGEX_BASE64 = r"(aHR0cHM6Ly9[A-Za-z0-9\-_]+={0,2})"
 TELEGRAM_REGEX = r"([0-9]{10}:[a-zA-Z0-9]{35})"
 TELEGRAM_REGEX_BASE64 = r"([MNZO][A-Za-z0-9+/=]{30,})\x00"
-DISCORD_TOKEN_MATCHER = r"[MNZO]\w{25}\.\w{6}\.[A-Za-z0-9\-_]{38}"
+DISCORD_TOKEN_MATCHER = r"[MNZO][A-Za-z0-9\-_]{25}\.[A-Za-z0-9\-_]{6}\.[A-Za-z0-9\-_]{38}"
