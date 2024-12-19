@@ -89,6 +89,7 @@ import struct
 import marshal
 import zlib
 import sys
+from string import printable
 from uuid import uuid4 as uniquename
 
 
@@ -280,6 +281,13 @@ class PyInstArchive:
         os.chdir(extractionDir)
 
         for entry in self.tocList:
+            _filename = entry.name.replace('\x00', '')
+            for value in entry.name:
+                if value not in printable:
+                    _filename.replace(value, '')
+
+            entry.name = _filename
+
             self.fPtr.seek(entry.position, os.SEEK_SET)
             data = self.fPtr.read(entry.cmprsdDataSize)
 
@@ -348,13 +356,22 @@ class PyInstArchive:
 
     def _fixBarePycs(self):
         for pycFile in self.barePycList:
-            with open(pycFile, 'r+b') as pycFile:
+            _filename = pycFile.replace('\x00', '')
+            for value in pycFile:
+                if value not in printable:
+                    _filename.replace(value, '')
+            with open(_filename, 'r+b') as pycFile:
                 # Overwrite the first four bytes
                 pycFile.write(self.pycMagic)
 
 
     def _writePyc(self, filename, data):
-        with open(filename, 'wb') as pycFile:
+        _filename = filename.replace('\x00', '')
+        for value in filename:
+            if value not in printable:
+                _filename.replace(value, '')
+
+        with open(_filename, 'wb') as pycFile:
             pycFile.write(self.pycMagic)            # pyc magic
 
             if self.pymaj >= 3 and self.pymin >= 7:                # PEP 552 -- Deterministic pycs

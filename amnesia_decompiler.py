@@ -77,7 +77,7 @@ def _decompile_blank_grabber(pyc_decompiled: str, directory: str):
 def _find_blank_grabber_pyc(directory: str) -> str:
     for root, _, files in walk(directory):
         for file in files:
-            if file.endswith(".pyc") and fullmatch(r"(\w+-\w+)+.pyc", file):
+            if file.endswith(".pyc") and fullmatch(r"(.*?).pyc", file) and not file.startswith('pyi') and file != 'struct.pyc':
                 return path.join(root, file)
 
 
